@@ -1062,17 +1062,3 @@ to { text-shadow: 0 0 15px #ff9900; }
 .glow-btn:hover span {
   color: #222;
 }
-   @keyframes flash {
-      0%, 100% { box-shadow: 0 0 5px 2px #ff0000; }
-      50% { box-shadow: 0 0 15px 4px #ff0000; }
-    }
-
-    .bp-widget-button {
-      animation: flash 1s infinite;
-      background-color: #ff0000 !important; /* Red background */
-      border-radius: 50% !important;        /* Circular */
-      width: 70px !important;
-      height: 70px !important;
-      bottom: 20px !important;
-      right: 20px !important;
-    }
