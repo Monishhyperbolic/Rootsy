@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Seller Login - Rootsy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <!-- Axios for API calls -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-[#f9f9f9] flex flex-col items-center justify-center min-h-screen font-sans">
+  <div class="navbar w-full">
+    <a href="index.html" class="logo">
+      <img src="https://i.ibb.co/9kyCpTBY/Image-Preview-from-Remove-bg.png" style="width: 200px; height: auto;" alt="Logo" />
+    </a>
+  </div>
+
+  <div class="flex-grow flex items-center justify-center w-full">
+    <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-md" id="login-section">
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-bold text-blue-600 mb-1">Welcome Back, Seller!</h2>
+        <p class="text-gray-500 text-sm">Login to manage your orders & products</p>
+      </div>
+
+      <!-- Google Login -->
+      <button id="google-login" class="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-2 mb-6 hover:bg-gray-100 transition">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
+        <span class="text-gray-700 font-medium">Login with Google</span>
+      </button>
+
+      <div id="login-status" class="text-center text-sm mt-4 hidden">
+        <div class="animate-spin inline-block w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full mr-2"></div>
+        <span>Logging in...</span>
+      </div>
+      
+      <div id="login-error" class="text-center text-sm text-red-500 mt-4 hidden"></div>
+    </div>
+
+    <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-md hidden" id="form-section">
+      <h2 class="text-2xl font-bold text-blue-600 mb-6">Complete Your Profile</h2>
+
+      <!-- Form to collect seller details -->
+      <form id="seller-form" class="space-y-5">
+        <div>
+          <label class="block text-gray-600 mb-1">Name</label>
+          <input type="text" id="name" placeholder="Enter your name"
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-gray-600 mb-1">PIN Code</label>
+          <div class="flex items-center gap-2">
+            <input type="text" id="pincode" placeholder="Enter your PIN code"
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+            <button type="button" id="fetch-location" class="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded text-sm">
+              Verify
+            </button>
+          </div>
+          <p id="pincode-status" class="text-xs mt-1 hidden"></p>
+        </div>
+        <div>
+          <label class="block text-gray-600 mb-1">Location</label>
+          <input type="text" id="location" placeholder="Enter your location"
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+        </div>
+
+        <!-- Hidden fields for coordinates -->
+        <input type="hidden" id="location-latitude">
+        <input type="hidden" id="location-longitude">
+
+        <div id="coordinates-display" class="text-xs text-gray-500 hidden">
+          <div>Location coordinates detected:</div>
+          <div>Latitude: <span id="lat-display"></span>, Longitude: <span id="lng-display"></span></div>
+        </div>
+
+        <button type="submit"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition">
+          Save Profile
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
+      authDomain: "rootsy-ec110.firebaseapp.com",
+      projectId: "rootsy-ec110",
+      storageBucket: "rootsy-ec110.appspot.com",
+      messagingSenderId: "120254624474",
+      appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
+      measurementId: "G-0Y636N5BPV"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // JSONBin Configuration
+    const sellersBinUrl = 'https://api.jsonbin.io/v3/b/680d42328960c979a58dd989';
+    const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
+
+    // Get status elements
+    const loginStatus = document.getElementById('login-status');
+    const loginError = document.getElementById('login-error');
+    const pincodeStatus = document.getElementById('pincode-status');
+    const coordinatesDisplay = document.getElementById('coordinates-display');
+    const latDisplay = document.getElementById('lat-display');
+    const lngDisplay = document.getElementById('lng-display');
+
+    // Check if user is already logged in
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        try {
+          loginStatus.classList.remove('hidden');
+          // Fetch seller profile from JSONBin.io
+          const response = await fetch(sellersBinUrl, {
+            method: 'GET',
+            headers: {
+              'X-Master-Key': apiKey
+            }
+          });
+          const data = await response.json();
+          const sellers = data.record?.sellerdetails || [];
+
+          // Check if the seller's email exists in sellerdetails
+          const seller = sellers.find(seller => seller.email === user.email);
+
+          if (seller) {
+            // Seller exists, redirect to dashboard
+            window.location.href = 'dashboard.html';
+          } else {
+            // Seller does not exist, show the profile form
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('form-section').classList.remove('hidden');
+          }
+        } catch (error) {
+          console.error('Error fetching seller data from JSONBin:', error);
+          showLoginError('Error fetching data: ' + error.message);
+        } finally {
+          loginStatus.classList.add('hidden');
+        }
+      }
+    });
+
+    // Google Login functionality
+    document.getElementById('google-login').addEventListener('click', () => {
+      loginStatus.classList.remove('hidden');
+      loginError.classList.add('hidden');
+      
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      
+      auth.signInWithPopup(provider)
+        .then(async (result) => {
+          const user = result.user;
+          console.log(`User logged in successfully:`, user.email);
+
+          try {
+            // Fetch seller profile from JSONBin.io
+            const response = await fetch(sellersBinUrl, {
+              method: 'GET',
+              headers: {
+                'X-Master-Key': apiKey
+              }
+            });
+            const data = await response.json();
+            const sellers = data.record?.sellerdetails || [];
+
+            const seller = sellers.find(seller => seller.email === user.email);
+
+            if (seller) {
+              // Seller exists, redirect to dashboard
+              window.location.href = 'dashboard.html';
+            } else {
+              // Seller does not exist, show the profile form
+              document.getElementById('login-section').classList.add('hidden');
+              document.getElementById('form-section').classList.remove('hidden');
+            }
+          } catch (error) {
+            console.error('Error fetching seller data from JSONBin:', error);
+            showLoginError('Error fetching data: ' + error.message);
+          }
+        })
+        .catch((error) => {
+          console.error('Error during Google login: ', error);
+          showLoginError('Login failed: ' + error.message);
+        })
+        .finally(() => {
+          loginStatus.classList.add('hidden');
+        });
+    });
+
+    // PIN Code Verification
+    document.getElementById('fetch-location').addEventListener('click', async () => {
+      const pincode = document.getElementById('pincode').value.trim();
+      pincodeStatus.classList.remove('hidden');
+
+      if (!/^\d{6}$/.test(pincode)) {
+        pincodeStatus.textContent = 'Please enter a valid 6-digit PIN code.';
+        pincodeStatus.classList.add('text-red-500');
+        return;
+      }
+
+      pincodeStatus.textContent = 'Verifying PIN code...';
+      pincodeStatus.classList.remove('text-red-500');
+
+      try {
+        // Use OpenStreetMap Nominatim to fetch location data
+        const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
+          params: {
+            postalcode: pincode,
+            country: 'India',
+            format: 'json',
+            addressdetails: 1,
+            limit: 1
+          },
+          headers: {
+            'User-Agent': 'RootsyGrocery/1.0 (support@rootsy.com)'
+          }
+        });
+
+        if (response.data.length === 0) {
+          pincodeStatus.textContent = 'Invalid PIN code or location not found.';
+          pincodeStatus.classList.add('text-red-500');
+          return;
+        }
+
+        const result = response.data[0];
+        const location = result.display_name;
+        const latitude = parseFloat(result.lat);
+        const longitude = parseFloat(result.lon);
+
+        // Update form fields
+        document.getElementById('location').value = location;
+        document.getElementById('location-latitude').value = latitude;
+        document.getElementById('location-longitude').value = longitude;
+        latDisplay.textContent = latitude.toFixed(4);
+        lngDisplay.textContent = longitude.toFixed(4);
+        coordinatesDisplay.classList.remove('hidden');
+
+        pincodeStatus.textContent = 'PIN code verified successfully!';
+        pincodeStatus.classList.add('text-green-500');
+      } catch (error) {
+        console.error('Error verifying PIN code:', error);
+        pincodeStatus.textContent = 'Error verifying PIN code: ' + error.message;
+        pincodeStatus.classList.add('text-red-500');
+      }
+    });
+
+    // Handle form submission for creating a new seller profile
+    document.getElementById('seller-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const pincode = document.getElementById('pincode').value.trim();
+      const location = document.getElementById('location').value.trim();
+      const latitude = document.getElementById('location-latitude').value;
+      const longitude = document.getElementById('location-longitude').value;
+
+      if (!name || !pincode || !location) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      if (!/^\d{6}$/.test(pincode)) {
+        alert('Please enter a valid 6-digit PIN code');
+        return;
+      }
+
+      // Show loading state
+      const submitButton = e.target.querySelector('button[type="submit"]');
+      const originalText = submitButton.textContent;
+      submitButton.disabled = true;
+      submitButton.textContent = 'Saving...';
+
+      try {
+        // Prepare seller data
+        const user = firebase.auth().currentUser;
+        if (!user) {
+          throw new Error('No authenticated user found');
+        }
+
+        const sellerData = { 
+          name, 
+          email: user.email, 
+          location,
+          location_latitude: parseFloat(latitude) || null,
+          location_longitude: parseFloat(longitude) || null,
+          pincode
+        };
+
+        // Fetch existing data from JSONBin.io
+        const response = await fetch(sellersBinUrl, {
+          method: 'GET',
+          headers: {
+            'X-Master-Key': apiKey
+          }
+        });
+        const data = await response.json();
+        const sellers = data.record?.sellerdetails || [];
+
+        // Add the new seller
+        sellers.push(sellerData);
+
+        // Update JSONBin with the new sellerdetails array
+        await fetch(sellersBinUrl, {
+          method: 'PUT',
+          headers: {
+            'X-Master-Key': apiKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ sellerdetails: sellers })
+        });
+
+        alert('Profile saved successfully!');
+        // Redirect to dashboard after successful submission
+        window.location.href = 'dashboard.html';
+      } catch (error) {
+        console.error('Error saving seller data:', error);
+        alert('Error saving profile: ' + error.message);
+      } finally {
+        // Reset button state
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
+      }
+    });
+
+    function showLoginError(message) {
+      loginError.textContent = message;
+      loginError.classList.remove('hidden');
+      loginStatus.classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
