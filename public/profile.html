@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>User Profile | Grocery Store</title>
+  <link rel="stylesheet" href="shop.css">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+</head>
+<body>
+
+  <!-- Header similar to shop.html -->
+  <header>
+    <div class="top-banner">
+        <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
+        <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
+    </div>
+    <div class="top-header">
+        <div class="left-section">
+          <a href="about.html">About Us</a>
+          <a href="profile.html">My account</a>
+          <a href="wishlist.html">Wishlist</a>
+          <span class="divider"></span>
+          <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
+        </div>
+        <div class="right-section">
+          <div id="google_translate_element"></div>
+          <a href="seller_login.html"><button class="seller-btn">Seller Login</button></a>
+          <a href="#">Order Tracking</a>
+        </div>
+      </div>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a href="#" class="logo">
+                <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="Grobox Logo">
+                <span id="brand"></span>
+            </a>
+            <div class="delivery">
+                <span>Deliver to</span>
+                <span>all</span>
+            </div>
+        </div>
+        <div class="navbar-center">
+            <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
+            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+        <div class="navbar-right">
+            <a href="orderhistory.html"story class="account"><i class="fa-solid fa-user"></i><span><b> ORDER HISTORY</b></span></a>
+            <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
+            <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
+        </div>
+    </nav>
+    <div class="navbar-links">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="fruitsvegetable.html">Fruits & Vegetables</a>
+        <a href="beverages.html">Beverages</a>
+        <a href="blog.html">Blog</a>
+        <a href="contact.html">Contact</a>
+        <a href="trendingproduct.html">Trending Products</a>
+        <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
+    </div>
+  </header>
+
+  <!-- Profile Content -->
+  <div class="profile-container">
+    <h2>My Profile</h2>
+
+    <div id="user-info">
+      <p><strong>Email: </strong><span id="user-email"></span></p>
+
+      <!-- Editable User Data Form -->
+      <label for="user-name">Name: </label>
+      <input type="text" id="user-name" placeholder="Enter your name" />
+
+      <label for="user-street">Street: </label>
+      <input type="text" id="user-street" placeholder="Enter street address" />
+
+      <label for="user-city">City: </label>
+      <input type="text" id="user-city" placeholder="Enter city" />
+
+      <label for="user-postal-code">Postal Code: </label>
+      <input type="text" id="user-postal-code" placeholder="Enter postal code" />
+
+      <label for="user-country">Country: </label>
+      <input type="text" id="user-country" placeholder="Enter country" />
+
+      <button onclick="updateUserData()">Update Info</button>
+    </div>
+
+    <button onclick="resetPassword()">Reset Password</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="newsletter">
+        <p>Join our newsletter for exclusive discounts!</p>
+        <form>
+            <input type="email" placeholder="Enter your email">
+            <button type="submit">Subscribe</button>
+        </form>
+    </div>
+    <div class="footer-content">
+        <div class="column">
+            <h3>Need Help?</h3>
+            <p>Contact our support team: support@rootsy.com</p>
+            <p>Call us: 0800 19019028</p>
+        </div>
+        <div class="column">
+            <h3>Company Info</h3>
+            <ul>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Careers</a></li>
+            </ul>
+        </div>
+        <div class="column">
+            <h3>Follow Us</h3>
+            <div class="social-media">
+                <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
+                <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
+                <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
+            </div>
+        </div>
+        <div class="column">
+            <h3>Payment Methods</h3>
+            <div class="payment-methods">
+                <i class="fa-brands fa-cc-visa"></i>
+                <i class="fa-brands fa-cc-mastercard"></i>
+                <i class="fa-brands fa-cc-paypal"></i>
+            </div>
+        </div>
+    </div>
+    <div class="copyright">
+        Copyright 2025 ©️ Rootsy All rights reserved. Powered by Bewbandits.
+    </div>
+    <div class="links">
+        <a href="#">Terms and Conditions</a> |
+        <a href="#">Privacy Policy</a> |
+        <a href="#">Order Tracking</a>
+    </div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
+      authDomain: "rootsy-ec110.firebaseapp.com",
+      projectId: "rootsy-ec110",
+      storageBucket: "rootsy-ec110.appspot.com",
+      messagingSenderId: "120254624474",
+      appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
+      measurementId: "G-0Y636N5BPV"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // JSONBin Configuration
+    const jsonBinUrl = 'https://api.jsonbin.io/v3/b/680d30418960c979a58dcc80';
+    const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
+
+    // Check auth state and fetch user data
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "sign_in.html";
+      } else {
+        document.getElementById('user-email').textContent = user.email;
+        fetchUserData(user.email);
+      }
+    });
+
+    // Fetch user data from JSONBin
+    async function fetchUserData(email) {
+      try {
+        const response = await fetch(jsonBinUrl, {
+          method: 'GET',
+          headers: {
+            'X-Master-Key': apiKey
+          }
+        });
+        const data = await response.json();
+        const users = data.record?.users || [];
+
+        const user = users.find(user => user.email === email);
+
+        if (user) {
+          document.getElementById('user-name').value = user.name || '';
+          document.getElementById('user-street').value = user.address?.street || '';
+          document.getElementById('user-city').value = user.address?.city || '';
+          document.getElementById('user-postal-code').value = user.address?.postal_code || '';
+          document.getElementById('user-country').value = user.address?.country || '';
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    }
+
+    // Update or add user data
+    async function updateUserData() {
+      const email = document.getElementById('user-email').textContent;
+      const updatedUserData = {
+        email: email,
+        name: document.getElementById('user-name').value,
+        address: {
+          street: document.getElementById('user-street').value,
+          city: document.getElementById('user-city').value,
+          postal_code: document.getElementById('user-postal-code').value,
+          country: document.getElementById('user-country').value
+        }
+      };
+
+      try {
+        // Fetch current data
+        const response = await fetch(jsonBinUrl, {
+          method: 'GET',
+          headers: {
+            'X-Master-Key': apiKey
+          }
+        });
+        const data = await response.json();
+        let users = data.record?.users || [];
+
+        const existingUserIndex = users.findIndex(user => user.email === email);
+
+        if (existingUserIndex !== -1) {
+          // Update existing user
+          users[existingUserIndex] = updatedUserData;
+          alert("User data updated successfully!");
+        } else {
+          // Add new user
+          users.push(updatedUserData);
+          alert("User added successfully!");
+        }
+
+        // Update JSONBin
+        const updateResponse = await fetch(jsonBinUrl, {
+          method: 'PUT',
+          headers: {
+            'X-Master-Key': apiKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ users })
+        });
+
+        if (!updateResponse.ok) {
+          throw new Error('Failed to update JSONBin');
+        }
+      } catch (error) {
+        console.error('Error updating user data:', error);
+        alert("Error updating user data. Please try again.");
+      }
+    }
+
+    // Logout User
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "sign_in.html";
+      }).catch((error) => {
+        console.error('Error signing out:', error);
+      });
+    }
+
+    // Reset Password
+    function resetPassword() {
+      const user = firebase.auth().currentUser;
+      if (user) {
+        firebase.auth().sendPasswordResetEmail(user.email)
+          .then(() => {
+            alert("Password reset email sent.");
+          })
+          .catch((error) => {
+            console.error('Error sending password reset email:', error);
+          });
+      }
+    }
+  </script>
+</body>
+</html>
