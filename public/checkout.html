@@ -118,7 +118,6 @@
       margin: 20px 0;
       display: none;
     }
-    /* Modal Styles */
     .modal {
       display: none;
       position: fixed;
@@ -264,7 +263,7 @@
     <!-- Stellar Payment Modal -->
     <div id="stellar-modal" class="modal">
       <div class="modal-content">
-        <span class="close-btn" onclick="closeStellarModal()">&times;</span>
+        <span class="close-btn" onclick="closeStellarModal()">×</span>
         <h3>Stellar Payment</h3>
         <p>Send the exact amount to the Stellar wallet below:</p>
         <p><strong>Amount:</strong> <span id="stellar-amount"></span> XLM</p>
@@ -352,6 +351,9 @@
     // Stellar Configuration (Testnet)
     const stellarServer = new StellarSdk.Server('https://horizon-testnet.stellar.org');
     const merchantWallet = 'GBSPECXL4NDWYGXLFRSPOB767IRT63NQ4OBSF74O2RFX44LG7QH74XZD';
+
+    // Global variable to manage payment polling
+    let paymentPollingInterval = null;
 
     // Check auth state and fetch user data
     firebase.auth().onAuthStateChanged((user) => {
@@ -593,14 +595,32 @@
 
     // Stellar Payment Modal Control
     function openStellarModal() {
+      // Clear any existing polling interval
+      if (paymentPollingInterval) {
+        clearInterval(paymentPollingInterval);
+        paymentPollingInterval = null;
+      }
+      // Reset modal content
+      document.getElementById('stellar-qr-code').innerHTML = '';
+      document.getElementById('stellar-status').textContent = 'Waiting for payment...';
+      document.getElementById('stellar-amount').textContent = '';
+      document.getElementById('stellar-wallet').textContent = '';
+      // Show modal
       document.getElementById('stellar-modal').style.display = 'flex';
       initiateStellarPayment();
     }
 
     function closeStellarModal() {
+      // Stop polling
+      if (paymentPollingInterval) {
+        clearInterval(paymentPollingInterval);
+        paymentPollingInterval = null;
+      }
+      // Hide modal and reset content
       document.getElementById('stellar-modal').style.display = 'none';
       document.getElementById('stellar-qr-code').innerHTML = '';
       document.getElementById('stellar-status').textContent = 'Waiting for payment...';
+      document.getElementById('error-message').textContent = '';
     }
 
     // Stellar Payment
@@ -649,12 +669,22 @@
           height: 200
         });
 
-        // Monitor payment
+        // Monitor payment with interval
         let paymentConfirmed = false;
         const startTime = Date.now();
         const timeout = 10 * 60 * 1000; // 10 minutes
 
-        while (!paymentConfirmed && Date.now() - startTime < timeout) {
+        paymentPollingInterval = setInterval(async () => {
+          if (paymentConfirmed || Date.now() - startTime >= timeout) {
+            clearInterval(paymentPollingInterval);
+            paymentPollingInterval = null;
+            if (!paymentConfirmed) {
+              document.getElementById('stellar-status').textContent = 'Payment not received within 10 minutes.';
+              document.getElementById('error-message').textContent = 'Payment timed out. Please try again.';
+            }
+            return;
+          }
+
           try {
             const payments = await stellarServer
               .payments()
@@ -673,6 +703,8 @@
 
             if (payment) {
               paymentConfirmed = true;
+              clearInterval(paymentPollingInterval);
+              paymentPollingInterval = null;
               const transactionId = payment.transaction_hash;
               const savedOrderId = await saveOrder('Stellar', transactionId, appliedCoupon, discount);
               alert('Payment successful! Order placed.');
@@ -680,19 +712,15 @@
               localStorage.removeItem('appliedCoupon');
               closeStellarModal();
               window.location.href = `orderconfirmation.html?orderId=${savedOrderId}`;
-              return;
             }
-
-            await new Promise(resolve => setTimeout(resolve, 5000));
           } catch (error) {
             console.error('Error checking payment:', error);
-            await new Promise(resolve => setTimeout(resolve, 5000));
           }
-        }
+        }, 5000);
 
-        document.getElementById('stellar-status').textContent = 'Payment not received within 10 minutes.';
-        document.getElementById('error-message').textContent = 'Payment timed out. Please try again.';
       } catch (error) {
+        clearInterval(paymentPollingInterval);
+        paymentPollingInterval = null;
         document.getElementById('error-message').textContent = 'Error initiating Stellar payment. Please try again.';
         console.error('Stellar error:', error);
       } finally {
@@ -778,6 +806,15 @@
         console.error('Error signing out:', error);
       });
     }
+
+    // Initialize page by ensuring no automatic payment
+    window.addEventListener('load', () => {
+      if (paymentPollingInterval) {
+        clearInterval(paymentPollingInterval);
+        paymentPollingInterval = null;
+      }
+      closeStellarModal();
+    });
   </script>
 </body>
 </html>
