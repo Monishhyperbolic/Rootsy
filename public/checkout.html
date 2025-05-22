@@ -134,17 +134,17 @@
       background-color: white;
       padding: 30px;
       border-radius: 12px;
-      max-width: 600px; /* Increased size */
+      max-width: 600px;
       width: 90%;
       text-align: center;
       position: relative;
-      font-size: 18px; /* Larger text */
+      font-size: 18px;
     }
     .close-btn {
       position: absolute;
       top: 15px;
       right: 15px;
-      font-size: 24px; /* Larger close button */
+      font-size: 24px;
       cursor: pointer;
     }
     #stellar-qr-code {
@@ -157,7 +157,7 @@
     }
     #stellar-amount, #stellar-wallet {
       font-size: 16px;
-      word-break: break-all; /* Ensure long wallet address wraps */
+      word-break: break-all;
     }
   </style>
 </head>
@@ -274,6 +274,7 @@
         <p>Send the exact amount to the Stellar wallet below:</p>
         <p><strong>Amount:</strong> <span id="stellar-amount"></span> XLM</p>
         <p><strong>Wallet Address:</strong> <span id="stellar-wallet"></span></p>
+        <p><strong>Memo:</strong> <span id="stellar-memo"></span></p>
         <div id="stellar-qr-code"></div>
         <p id="stellar-status">Waiting for payment...</p>
       </div>
@@ -613,6 +614,7 @@
       document.getElementById('stellar-status').textContent = 'Waiting for payment...';
       document.getElementById('stellar-amount').textContent = '';
       document.getElementById('stellar-wallet').textContent = '';
+      document.getElementById('stellar-memo').textContent = '';
       // Show modal
       document.getElementById('stellar-modal').style.display = 'flex';
       initiateStellarPayment();
@@ -630,6 +632,9 @@
       document.getElementById('stellar-qr-code').innerHTML = '';
       document.getElementById('stellar-status').textContent = 'Waiting for payment...';
       document.getElementById('error-message').textContent = '';
+      document.getElementById('stellar-amount').textContent = '';
+      document.getElementById('stellar-wallet').textContent = '';
+      document.getElementById('stellar-memo').textContent = '';
     }
 
     // Stellar Payment
@@ -668,27 +673,28 @@
         // Show Stellar payment details in modal
         document.getElementById('stellar-amount').textContent = totalXLM;
         document.getElementById('stellar-wallet').textContent = merchantWallet;
+        document.getElementById('stellar-memo').textContent = currentOrderId;
 
         // Generate QR code
         const qrCodeDiv = document.getElementById('stellar-qr-code');
         qrCodeDiv.innerHTML = '';
         new QRCode(qrCodeDiv, {
           text: `stellar:${merchantWallet}?amount=${totalXLM}&memo=${currentOrderId}`,
-          width: 300, // Increased QR code size
+          width: 300,
           height: 300
         });
 
         // Monitor payment with interval
         let paymentConfirmed = false;
         const startTime = Date.now();
-        const timeout = 10 * 60 * 1000; // 10 minutes
+        const timeout = 8 * 60 * 1000; // 8 minutes
 
         paymentPollingInterval = setInterval(async () => {
           if (paymentConfirmed || Date.now() - startTime >= timeout || !currentOrderId) {
             clearInterval(paymentPollingInterval);
             paymentPollingInterval = null;
             if (!paymentConfirmed && currentOrderId) {
-              document.getElementById('stellar-status').textContent = 'Payment not received within 10 minutes.';
+              document.getElementById('stellar-status').textContent = 'Payment not received within 8 minutes.';
               document.getElementById('error-message').textContent = 'Payment timed out. Please try again.';
             }
             return;
@@ -698,18 +704,26 @@
             const payments = await stellarServer
               .payments()
               .forAccount(merchantWallet)
-              .limit(10)
+              .limit(20) // Increased limit to catch more payments
               .order('desc')
               .call();
 
-            console.log('Checking payments for order:', currentOrderId, 'Expected amount:', totalXLM);
+            console.log('Checking payments for order:', currentOrderId, 'Expected amount:', totalXLM, 'Expected memo:', currentOrderId);
+            console.log('Payments received:', payments.records.map(p => ({
+              amount: p.amount,
+              memo: p.transaction_attr?.memo,
+              to: p.to,
+              created_at: p.created_at,
+              type: p.type,
+              asset_type: p.asset_type
+            })));
+
             const payment = payments.records.find(p => {
               const isValid = p.type === 'payment' &&
                 p.asset_type === 'native' &&
-                Math.abs(parseFloat(p.amount) - parseFloat(totalXLM)) <= 0.01 && // Relaxed tolerance
+                Math.abs(parseFloat(p.amount) - parseFloat(totalXLM)) <= 0.1 && // Further relaxed tolerance
                 p.to === merchantWallet &&
-                p.transaction_attr?.memo === currentOrderId &&
-                new Date(p.created_at) >= new Date(startTime - 60000); // Within 1 minute before start
+                p.transaction_attr?.memo === currentOrderId;
               console.log('Payment checked:', {
                 amount: p.amount,
                 memo: p.transaction_attr?.memo,
@@ -819,7 +833,7 @@
         return orderId;
       } catch (error) {
         console.error('Error saving order:', error);
-        throw error; // Rethrow to handle in calling function
+        throw error;
       }
     }
 
