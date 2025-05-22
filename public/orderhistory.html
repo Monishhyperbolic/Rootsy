@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order History | Grocery Store</title>
+  <link rel="stylesheet" href="shop.css">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+  <style>
+    .order-history-container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    .order-history-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .order-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      background-color: #fff;
+    }
+    .order-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.5em;
+    }
+    .order-card p {
+      margin: 5px 0;
+    }
+    .product-list {
+      margin-top: 15px;
+      padding-left: 20px;
+    }
+    .product-item {
+      margin-bottom: 10px;
+    }
+    .error-message {
+      color: red;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .loading {
+      text-align: center;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="top-banner">
+        <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
+        <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
+    </div>
+    <div class="top-header">
+        <div class="left-section">
+          <a href="about.html">About Us</a>
+          <a href="profile.html">My account</a>
+          <a href="wishlist.html">Wishlist</a>
+          <span class="divider"></span>
+          <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
+        </div>
+        <div class="right-section">
+          <div id="google_translate_element"></div>
+          <a href="seller_login.html"><button class="seller-btn">Seller Login</button></a>
+          <a href="#">Order Tracking</a>
+        </div>
+      </div>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a href="#" class="logo">
+                <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="Grobox Logo">
+                <span id="brand"></span>
+            </a>
+            <div class="delivery">
+                <span>Deliver to</span>
+                <span>all</span>
+            </div>
+        </div>
+        <div class="navbar-center">
+            <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
+            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+        <div class="navbar-right">
+            <a id="account-link" href="profile.html" class="account">
+                <img id="profile-image" src="default-profile.png" alt="Profile" style="width:40px; height:40px; border-radius:50%;">
+              </a>            <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
+            <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
+        </div>
+    </nav>
+    <div class="navbar-links">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="fruitsvegetable.html">Fruits & Vegetables</a>
+        <a href="beverages.html">Beverages</a>
+        <a href="blog.html">Blog</a>
+        <a href="contact.html">Contact</a>
+        <a href="trendingproduct.html">Trending Products</a>
+        <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
+    </div>
+  </header>
+
+  <!-- Order History Content -->
+  <div class="order-history-container">
+    <h2>My Order History</h2>
+    <div id="order-list"></div>
+    <div id="loading" class="loading">Loading...</div>
+    <div id="error-message" class="error-message"></div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="newsletter">
+        <p>Join our newsletter for exclusive discounts!</p>
+        <form>
+            <input type="email" placeholder="Enter your email">
+            <button type="submit">Subscribe</button>
+        </form>
+    </div>
+    <div class="footer-content">
+        <div class="column">
+            <h3>Need Help?</h3>
+            <p>Contact our support team: support@rootsy.com</p>
+            <p>Call us: 0800 19019028</p>
+        </div>
+        <div class="column">
+            <h3>Company Info</h3>
+            <ul>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Careers</a></li>
+            </ul>
+        </div>
+        <div class="column">
+            <h3>Follow Us</h3>
+            <div class="social-media">
+                <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
+                <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
+                <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
+            </div>
+        </div>
+        <div class="column">
+            <h3>Payment Methods</h3>
+            <div class="payment-methods">
+                <i class="fa-brands fa-cc-visa"></i>
+                <i class="fa-brands fa-cc-mastercard"></i>
+                <i class="fa-brands fa-cc-paypal"></i>
+            </div>
+        </div>
+    </div>
+    <div class="copyright">
+        Copyright 2025 ©️ Rootsy All rights reserved. Powered by Bewbandits.
+    </div>
+    <div class="links">
+        <a href="#">Terms and Conditions</a> |
+        <a href="#">Privacy Policy</a> |
+        <a href="#">Order Tracking</a>
+    </div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
+      authDomain: "rootsy-ec110.firebaseapp.com",
+      projectId: "rootsy-ec110",
+      storageBucket: "rootsy-ec110.appspot.com",
+      messagingSenderId: "120254624474",
+      appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
+      measurementId: "G-0Y636N5BPV"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // JSONBin Configuration
+    const jsonBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4116';
+    const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
+
+    // Check auth state and fetch order history
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "sign_in.html";
+      } else {
+        fetchOrderHistory(user.email);
+      }
+    });
+
+    // Fetch order history from JSONBin
+    async function fetchOrderHistory(email) {
+      try {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('error-message').textContent = '';
+
+        const response = await fetch(jsonBinUrl, {
+          method: 'GET',
+          headers: {
+            'X-Master-Key': apiKey
+          }
+        });
+        const data = await response.json();
+        const orders = data.record?.orders || [];
+
+        const userOrders = orders.filter(order => order.user.email === email);
+
+        document.getElementById('loading').style.display = 'none';
+
+        if (userOrders.length === 0) {
+          document.getElementById('order-list').innerHTML = '<p>No orders found.</p>';
+          return;
+        }
+
+        displayOrders(userOrders);
+      } catch (error) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error-message').textContent = 'Error fetching order history. Please try again.';
+        console.error('Error fetching order history:', error);
+      }
+    }
+
+    // Display orders
+    function displayOrders(orders) {
+      const orderList = document.getElementById('order-list');
+      orderList.innerHTML = '';
+
+      orders.forEach(order => {
+        const orderCard = document.createElement('div');
+        orderCard.className = 'order-card';
+
+        orderCard.innerHTML = `
+          <h3>Order ID: ${order.orderId}</h3>
+          <p><strong>Customer Name:</strong> ${order.user.name}</p>
+          <p><strong>Email:</strong> ${order.user.email}</p>
+          <p><strong>Phone:</strong> ${order.user.phone}</p>
+          <p><strong>Shipping Address:</strong> ${order.user.shippingAddress.addressLine1}, ${order.user.shippingAddress.city}, ${order.user.shippingAddress.state}, ${order.user.shippingAddress.postalCode}, ${order.user.shippingAddress.country}</p>
+          <h4>Products:</h4>
+          <div class="product-list">
+            ${order.products.map(product => `
+              <div class="product-item">
+                <p><strong>Product:</strong> ${product.name}</p>
+                <p><strong>Quantity:</strong> ${product.quantity}</p>
+                <p><strong>Price:</strong> ₹${product.price.toFixed(2)}</p>
+                <p><strong>Total:</strong> ₹${product.totalPrice.toFixed(2)}</p>
+                <p><strong>Seller:</strong> ${product.seller.name}</p>
+              </div>
+            `).join('')}
+          </div>
+        `;
+
+        orderList.appendChild(orderCard);
+      });
+    }
+
+    // Logout User
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "sign_in.html";
+      }).catch((error) => {
+        console.error('Error signing out:', error);
+      });
+    }
+  </script>
+</body>
+</html>

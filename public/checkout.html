@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard - Rootsy</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+<header class="flex items-center justify-between p-4 bg-white shadow">
+  <div class="flex items-center gap-2">
+    <img src="https://i.ibb.co/9kyCpTBY/Image-Preview-from-Remove-bg.png" style="width: 80px; height: auto;" alt="Logo" class="h-8">
+  </div>
+  <div class="flex items-center gap-4">
+    <input type="text" id="search-dashboard" placeholder="Search..." class="border rounded-full px-4 py-2 w-64 focus:outline-none focus:ring">
+    <div class="flex items-center gap-2">
+      <img id="user-avatar" src="https://via.placeholder.com/40" alt="User" class="rounded-full w-10 h-10">
+      <span id="seller-name" class="font-semibold">Loading...</span>
+    </div>
+  </div>
+</header>
+<div class="flex">
+  <aside class="w-64 bg-white p-6 min-h-screen shadow">
+    <nav class="flex flex-col gap-6">
+      <a href="#" class="flex items-center gap-2 text-blue-600 font-bold">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </a>
+      <a href="orders.html" class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
+        <i class="fas fa-shopping-cart"></i> Orders
+      </a>
+      <a href="products.html" class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
+        <i class="fas fa-box"></i> Products
+      </a>
+      <a href="#" id="logout-button" class="flex items-center gap-2 text-red-600 hover:text-red-700 mt-auto">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </nav>
+  </aside>
+  <main class="flex-1 p-6">
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold mb-2">Dashboard</h2>
+      <p class="text-gray-500">Welcome back! Here's an overview of your shop</p>
+    </div>
+    <div id="dashboard-loading" class="text-center py-8">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <p class="mt-2 text-gray-600">Loading dashboard data...</p>
+    </div>
+    <div id="dashboard-content" class="hidden">
+      <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <h3 class="text-lg font-semibold">Sales Overview</h3>
+          <div class="flex items-center gap-3">
+            <label class="text-gray-700">Time Period:</label>
+            <select id="time-period" class="border rounded px-3 py-2">
+              <option value="7">Last 7 Days</option>
+              <option value="30" selected>Last 30 Days</option>
+              <option value="90">Last 90 Days</option>
+              <option value="180">Last 6 Months</option>
+              <option value="365">Last Year</option>
+              <option value="all">All Time</option>
+            </select>
+            <button id="refresh-stats" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+              <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white rounded-xl shadow p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-semibold">Total Products Sold</h3>
+            <div id="products-trend" class="bg-green-100 text-green-700 p-1 px-2 rounded text-xs">+0% ↔</div>
+          </div>
+          <div class="flex items-end gap-2">
+            <span id="total-products-sold" class="text-4xl font-bold">0</span>
+            <span class="text-gray-500 text-sm mb-1">units</span>
+          </div>
+          <p class="text-gray-500 text-sm mt-2" id="time-period-label">In the last 30 days</p>
+          <div class="h-48 mt-4">
+            <canvas id="products-chart"></canvas>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-semibold">Total Revenue</h3>
+            <div id="revenue-trend" class="bg-green-100 text-green-700 p-1 px-2 rounded text-xs">+0% ↔</div>
+          </div>
+          <div class="flex items-end gap-2">
+            <span id="total-revenue" class="text-4xl font-bold">₹0.00</span>
+          </div>
+          <p class="text-gray-500 text-sm mt-2" id="revenue-time-period-label">In the last 30 days</p>
+          <div class="h-48 mt-4">
+            <canvas id="revenue-chart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-lg font-semibold mb-4">Top Selling Products</h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+              <tr>
+                <th class="py-3 px-6 text-left">Product</th>
+                <th class="py-3 px-6 text-center">Units Sold</th>
+                <th class="py-3 px-6 text-right">Revenue</th>
+              </tr>
+            </thead>
+            <tbody id="top-products-table-body" class="text-gray-700">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
+    authDomain: "rootsy-ec110.firebaseapp.com",
+    projectId: "rootsy-ec110",
+    storageBucket: "rootsy-ec110.appspot.com",
+    messagingSenderId: "120254624474",
+    appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
+    measurementId: "G-0Y636N5BPV"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const sellersBinUrl = 'https://api.jsonbin.io/v3/b/680d42328960c979a58dd989';
+  const ordersBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4116';
+  const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
+  const dashboardLoading = document.getElementById('dashboard-loading');
+  const dashboardContent = document.getElementById('dashboard-content');
+  const logoutButton = document.getElementById('logout-button');
+  const sellerNameElement = document.getElementById('seller-name');
+  const userAvatarElement = document.getElementById('user-avatar');
+  const timePeriodSelect = document.getElementById('time-period');
+  const refreshStatsButton = document.getElementById('refresh-stats');
+  const totalProductsSoldElement = document.getElementById('total-products-sold');
+  const totalRevenueElement = document.getElementById('total-revenue');
+  const timePeriodLabel = document.getElementById('time-period-label');
+  const revenueTimePeriodLabel = document.getElementById('revenue-time-period-label');
+  const topProductsTableBody = document.getElementById('top-products-table-body');
+  const productsTrendElement = document.getElementById('products-trend');
+  const revenueTrendElement = document.getElementById('revenue-trend');
+  let currentSeller = null;
+  let productsChart = null;
+  let revenueChart = null;
+  let previousProductsSold = 0;
+  let previousRevenue = 0;
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      try {
+        const sellerResponse = await axios.get(sellersBinUrl, {
+          headers: { 'X-Master-Key': apiKey }
+        });
+        const sellers = sellerResponse.data.record?.sellerdetails || [];
+        const seller = sellers.find(s => s.email === user.email);
+        if (seller) {
+          currentSeller = seller;
+          sellerNameElement.textContent = seller.name;
+          userAvatarElement.src = user.photoURL || 'https://via.placeholder.com/40';
+          loadStatsData();
+        } else {
+          window.location.href = 'sign_in.html';
+        }
+      } catch (error) {
+        console.error('Error fetching seller details:', error);
+        alert('Error loading seller information. Please try again later.');
+      }
+    } else {
+      window.location.href = 'sign_in.html';
+    }
+  });
+  async function loadStatsData() {
+    if (!currentSeller) return;
+    try {
+      dashboardLoading.classList.remove('hidden');
+      dashboardContent.classList.add('hidden');
+      const timePeriod = timePeriodSelect.value === 'all' ? 'all' : parseInt(timePeriodSelect.value);
+      const isAllTime = timePeriod === 'all';
+      const timeLabel = isAllTime ? 'All time' : `In the last ${timePeriod} days`;
+      timePeriodLabel.textContent = timeLabel;
+      revenueTimePeriodLabel.textContent = timeLabel;
+      const ordersResponse = await axios.get(ordersBinUrl, {
+        headers: { 'X-Master-Key': apiKey }
+      });
+      const orders = ordersResponse.data.record?.orders || [];
+      let previousPeriodStart, previousPeriodEnd;
+      let currentPeriodStart, currentPeriodEnd;
+      currentPeriodEnd = new Date();
+      if (isAllTime) {
+        currentPeriodStart = new Date(0);
+      } else {
+        currentPeriodStart = new Date();
+        currentPeriodStart.setDate(currentPeriodStart.getDate() - timePeriod);
+        previousPeriodEnd = new Date(currentPeriodStart);
+        previousPeriodStart = new Date(previousPeriodEnd);
+        previousPeriodStart.setDate(previousPeriodStart.getDate() - timePeriod);
+      }
+      const currentOrders = orders.filter(order => {
+        const orderDate = new Date(order.orderDate);
+        return orderDate >= currentPeriodStart && orderDate <= currentPeriodEnd &&
+               order.products.some(p => p.seller.name === currentSeller.name);
+      });
+      const previousOrders = isAllTime ? [] : orders.filter(order => {
+        const orderDate = new Date(order.orderDate);
+        return orderDate >= previousPeriodStart && orderDate <= previousPeriodEnd &&
+               order.products.some(p => p.seller.name === currentSeller.name);
+      });
+      const currentStats = calculateStats(currentOrders);
+      const previousStats = calculateStats(previousOrders);
+      previousProductsSold = previousStats.totalProductsSold;
+      previousRevenue = previousStats.totalRevenue;
+      let productsTrend = 0;
+      let revenueTrend = 0;
+      if (previousProductsSold > 0) {
+        productsTrend = ((currentStats.totalProductsSold - previousProductsSold) / previousProductsSold) * 100;
+      }
+      if (previousRevenue > 0) {
+        revenueTrend = ((currentStats.totalRevenue - previousRevenue) / previousRevenue) * 100;
+      }
+      updateTrendDisplay(productsTrendElement, productsTrend);
+      updateTrendDisplay(revenueTrendElement, revenueTrend);
+      const salesByDate = processSalesByDate(currentOrders, timePeriod);
+      const topProducts = processTopProducts(currentOrders);
+      totalProductsSoldElement.textContent = currentStats.totalProductsSold;
+      totalRevenueElement.textContent = `₹${currentStats.totalRevenue.toFixed(2)}`;
+      renderProductsChart(salesByDate.dates, salesByDate.counts);
+      renderRevenueChart(salesByDate.dates, salesByDate.amounts);
+      renderTopProductsTable(topProducts);
+      dashboardLoading.classList.add('hidden');
+      dashboardContent.classList.remove('hidden');
+    } catch (error) {
+      console.error('Error loading stats data:', error);
+      alert('Error loading stats data. Please try again later.');
+    }
+  }
+  function calculateStats(orders) {
+    let totalProductsSold = 0;
+    let totalRevenue = 0;
+    orders.forEach(order => {
+      order.products.forEach(product => {
+        if (product.seller.name === currentSeller.name) {
+          totalProductsSold += product.quantity;
+          totalRevenue += product.totalPrice;
+        }
+      });
+    });
+    return {
+      totalProductsSold,
+      totalRevenue
+    };
+  }
+  function processSalesByDate(orders, timePeriod) {
+    const salesByDate = {};
+    const dates = [];
+    const counts = [];
+    const amounts = [];
+    const isAllTime = timePeriod === 'all';
+    const numDays = isAllTime ? Math.min(30, Math.ceil((new Date() - new Date(orders[0]?.orderDate || new Date())) / (1000 * 60 * 60 * 24))) : timePeriod;
+    for (let i = numDays - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateString = date.toISOString().split('T')[0];
+      salesByDate[dateString] = { count: 0, amount: 0 };
+      dates.push(dateString);
+    }
+    orders.forEach(order => {
+      const dateString = new Date(order.orderDate).toISOString().split('T')[0];
+      if (salesByDate[dateString]) {
+        order.products.forEach(product => {
+          if (product.seller.name === currentSeller.name) {
+            salesByDate[dateString].count += product.quantity;
+            salesByDate[dateString].amount += product.totalPrice;
+          }
+        });
+      }
+    });
+    dates.forEach(date => {
+      counts.push(salesByDate[date].count);
+      amounts.push(salesByDate[date].amount);
+    });
+    const formattedDates = dates.map(date => {
+      const d = new Date(date);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+    return {
+      dates: formattedDates,
+      counts: counts,
+      amounts: amounts
+    };
+  }
+  function processTopProducts(orders) {
+    const productMap = {};
+    orders.forEach(order => {
+      order.products.forEach(product => {
+        if (product.seller.name === currentSeller.name) {
+          const productName = product.name;
+          if (!productMap[productName]) {
+            productMap[productName] = {
+              name: productName,
+              count: 0,
+              revenue: 0
+            };
+          }
+          productMap[productName].count += product.quantity;
+          productMap[productName].revenue += product.totalPrice;
+        }
+      });
+    });
+    return Object.values(productMap)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  }
+  function updateTrendDisplay(element, trendValue) {
+    const formattedTrend = trendValue.toFixed(1);
+    const isPositive = trendValue > 0;
+    const isNeutral = trendValue === 0;
+    if (isNeutral) {
+      element.className = 'bg-gray-100 text-gray-700 p-1 px-2 rounded text-xs';
+      element.innerHTML = 'No change';
+    } else {
+      element.className = isPositive 
+        ? 'bg-green-100 text-green-700 p-1 px-2 rounded text-xs'
+        : 'bg-red-100 text-red-700 p-1 px-2 rounded text-xs';
+      element.innerHTML = `${isPositive ? '+' : ''}${formattedTrend}% ${isPositive ? '↑' : '↓'}`;
+    }
+  }
+  function renderProductsChart(labels, data) {
+    const ctx = document.getElementById('products-chart').getContext('2d');
+    if (productsChart) {
+      productsChart.destroy();
+    }
+    productsChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Products Sold',
+          data: data,
+          backgroundColor: 'rgba(59, 130, 246, 0.7)',
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { display: true, color: 'rgba(0, 0, 0, 0.05)' },
+            ticks: { precision: 0 }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { autoSkip: true, maxRotation: 0, maxTicksLimit: 10 }
+          }
+        }
+      }
+    });
+  }
+  function renderRevenueChart(labels, data) {
+    const ctx = document.getElementById('revenue-chart').getContext('2d');
+    if (revenueChart) {
+      revenueChart.destroy();
+    }
+    revenueChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Revenue (₹)',
+          data: data,
+          fill: true,
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          borderColor: 'rgba(16, 185, 129, 1)',
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { display: true, color: 'rgba(0, 0, 0, 0.05)' },
+            ticks: {
+              callback: function(value) {
+                return '₹' + value;
+              }
+            }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { autoSkip: true, maxRotation: 0, maxTicksLimit: 10 }
+          }
+        }
+      }
+    });
+  }
+  function renderTopProductsTable(products) {
+    topProductsTableBody.innerHTML = '';
+    if (products.length === 0) {
+      const emptyRow = document.createElement('tr');
+      emptyRow.innerHTML = `<td colspan="3" class="py-4 px-6 text-center text-gray-500">No products sold in this period</td>`;
+      topProductsTableBody.appendChild(emptyRow);
+      return;
+    }
+    products.forEach(product => {
+      const row = document.createElement('tr');
+      row.className = 'border-b';
+      row.innerHTML = `
+        <td class="py-4 px-6">${product.name}</td>
+        <td class="py-4 px-6 text-center">${product.count}</td>
+        <td class="py-4 px-6 text-right">₹${product.revenue.toFixed(2)}</td>
+      `;
+      topProductsTableBody.appendChild(row);
+    });
+  }
+  async function logout() {
+    try {
+      await auth.signOut();
+      window.location.href = 'sign_in.html';
+    } catch (error) {
+      console.error('Error signing out:', error);
+      alert('Error signing out. Please try again.');
+    }
+  }
+  timePeriodSelect.addEventListener('change', loadStatsData);
+  refreshStatsButton.addEventListener('click', loadStatsData);
+  logoutButton.addEventListener('click', logout);
+</script>
+</body>
+</html>
