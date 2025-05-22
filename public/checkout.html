@@ -132,26 +132,32 @@
     }
     .modal-content {
       background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      max-width: 400px;
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 600px; /* Increased size */
       width: 90%;
       text-align: center;
       position: relative;
+      font-size: 18px; /* Larger text */
     }
     .close-btn {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 20px;
+      top: 15px;
+      right: 15px;
+      font-size: 24px; /* Larger close button */
       cursor: pointer;
     }
     #stellar-qr-code {
-      margin: 10px auto;
+      margin: 20px auto;
     }
     #stellar-status {
-      margin-top: 10px;
+      margin-top: 20px;
       font-weight: bold;
+      font-size: 16px;
+    }
+    #stellar-amount, #stellar-wallet {
+      font-size: 16px;
+      word-break: break-all; /* Ensure long wallet address wraps */
     }
   </style>
 </head>
@@ -352,9 +358,9 @@
     const stellarServer = new StellarSdk.Server('https://horizon-testnet.stellar.org');
     const merchantWallet = 'GBSPECXL4NDWYGXLFRSPOB767IRT63NQ4OBSF74O2RFX44LG7QH74XZD';
 
-    // Global variable to manage payment polling
+    // Global variables to manage payment polling
     let paymentPollingInterval = null;
-    let currentOrderId = null; // Track current order ID to prevent false positives
+    let currentOrderId = null;
 
     // Check auth state and fetch user data
     firebase.auth().onAuthStateChanged((user) => {
@@ -668,8 +674,8 @@
         qrCodeDiv.innerHTML = '';
         new QRCode(qrCodeDiv, {
           text: `stellar:${merchantWallet}?amount=${totalXLM}&memo=${currentOrderId}`,
-          width: 200,
-          height: 200
+          width: 300, // Increased QR code size
+          height: 300
         });
 
         // Monitor payment with interval
@@ -696,26 +702,41 @@
               .order('desc')
               .call();
 
-            const payment = payments.records.find(p => 
-              p.type === 'payment' &&
-              p.asset_type === 'native' &&
-              Math.abs(parseFloat(p.amount) - parseFloat(totalXLM)) <= 0.001 && // Stricter amount check
-              p.to === merchantWallet &&
-              p.transaction_attr?.memo === currentOrderId && // Strict memo match
-              new Date(p.created_at) >= new Date(startTime) // Ensure payment is recent
-            );
+            console.log('Checking payments for order:', currentOrderId, 'Expected amount:', totalXLM);
+            const payment = payments.records.find(p => {
+              const isValid = p.type === 'payment' &&
+                p.asset_type === 'native' &&
+                Math.abs(parseFloat(p.amount) - parseFloat(totalXLM)) <= 0.01 && // Relaxed tolerance
+                p.to === merchantWallet &&
+                p.transaction_attr?.memo === currentOrderId &&
+                new Date(p.created_at) >= new Date(startTime - 60000); // Within 1 minute before start
+              console.log('Payment checked:', {
+                amount: p.amount,
+                memo: p.transaction_attr?.memo,
+                to: p.to,
+                created_at: p.created_at,
+                isValid
+              });
+              return isValid;
+            });
 
             if (payment) {
               paymentConfirmed = true;
               clearInterval(paymentPollingInterval);
               paymentPollingInterval = null;
               const transactionId = payment.transaction_hash;
-              const savedOrderId = await saveOrder('Stellar', transactionId, appliedCoupon, discount);
-              alert('Payment successful! Order placed.');
-              localStorage.removeItem('cart');
-              localStorage.removeItem('appliedCoupon');
-              closeStellarModal();
-              window.location.href = `orderconfirmation.html?orderId=${savedOrderId}`;
+              console.log('Payment confirmed:', transactionId);
+              try {
+                const savedOrderId = await saveOrder('Stellar', transactionId, appliedCoupon, discount);
+                alert('Payment successful! Order placed.');
+                localStorage.removeItem('cart');
+                localStorage.removeItem('appliedCoupon');
+                closeStellarModal();
+                window.location.href = `orderconfirmation.html?orderId=${savedOrderId}`;
+              } catch (error) {
+                console.error('Error saving order after payment:', error);
+                document.getElementById('error-message').textContent = 'Payment received but error saving order. Please contact support.';
+              }
             }
           } catch (error) {
             console.error('Error checking payment:', error);
@@ -798,8 +819,7 @@
         return orderId;
       } catch (error) {
         console.error('Error saving order:', error);
-        document.getElementById('error-message').textContent = 'Error saving order. Please try again.';
-        throw error;
+        throw error; // Rethrow to handle in calling function
       }
     }
 
