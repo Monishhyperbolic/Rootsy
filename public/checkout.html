@@ -362,11 +362,10 @@
     const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
 
     // Stellar Configuration (Testnet)
-    const stellarServer = new StellarSdk.Server('https://horizon-testnet.stellar.org');
+    const stellarServer = new StellarSdk.Server('https://horizon-testnet.stellar.org', { networkPassphrase: StellarSdk.Networks.TESTNET });
     const merchantWallet = 'GBSPECXL4NDWYGXLFRSPOB767IRT63NQ4OBSF74O2RFX44LG7QH74XZD';
-    StellarSdk.Networks.TESTNET; // Ensure testnet passphrase
 
-    // Global variables to manage payment streaming and timer
+    // Global variables
     let paymentStream = null;
     let timerInterval = null;
     let currentOrderId = null;
@@ -611,7 +610,7 @@
 
     // Stellar Payment Modal Control
     function openStellarModal() {
-      // Clear any existing stream, timer, and state
+      // Clear existing stream and timer
       if (paymentStream) {
         paymentStream();
         paymentStream = null;
@@ -621,6 +620,7 @@
         timerInterval = null;
       }
       currentOrderId = null;
+
       // Reset modal content
       document.getElementById('stellar-qr-code').innerHTML = '';
       document.getElementById('stellar-status').textContent = 'Waiting for payment...';
@@ -628,13 +628,14 @@
       document.getElementById('stellar-wallet').textContent = '';
       document.getElementById('stellar-memo').textContent = '';
       document.getElementById('stellar-timer').textContent = 'Time remaining: 8:00';
-      // Show modal
+
+      // Show modal and initiate payment
       document.getElementById('stellar-modal').style.display = 'flex';
       initiateStellarPayment();
     }
 
     function closeStellarModal() {
-      // Stop stream, timer, and clear state
+      // Stop stream and timer
       if (paymentStream) {
         paymentStream();
         paymentStream = null;
@@ -644,6 +645,7 @@
         timerInterval = null;
       }
       currentOrderId = null;
+
       // Hide modal and reset content
       document.getElementById('stellar-modal').style.display = 'none';
       document.getElementById('stellar-qr-code').innerHTML = '';
@@ -676,7 +678,7 @@
         discount = subtotal * 0.10;
       }
       const totalINR = subtotal - discount;
-      currentOrderId = `ORD${Date.now()}`; // Set current order ID
+      currentOrderId = `ORD${Date.now()}`;
       const email = document.getElementById('user-email').textContent;
 
       try {
@@ -688,7 +690,7 @@
         const xlmPerInr = response.data.stellar.inr;
         const totalXLM = (totalINR / xlmPerInr).toFixed(7); // 7 decimals for precision
 
-        // Show Stellar payment details in modal
+        // Show Stellar payment details
         document.getElementById('stellar-amount').textContent = totalXLM;
         document.getElementById('stellar-wallet').textContent = merchantWallet;
         document.getElementById('stellar-memo').textContent = currentOrderId;
@@ -703,15 +705,15 @@
         });
 
         // Start countdown timer
-        let timeRemaining = 8 * 60; // 8 minutes in seconds
+        let timeRemaining = 8 * 60; // 8 minutes
         timerInterval = setInterval(() => {
           if (timeRemaining <= 0 || document.getElementById('stellar-modal').style.display !== 'flex') {
-            clearInterval(timerInterval);
-            timerInterval = null;
             if (paymentStream) {
               paymentStream();
               paymentStream = null;
             }
+            clearInterval(timerInterval);
+            timerInterval = null;
             if (timeRemaining <= 0 && currentOrderId) {
               document.getElementById('stellar-status').textContent = 'Payment not received within 8 minutes.';
               document.getElementById('error-message').textContent = 'Payment timed out. Please try again.';
@@ -725,111 +727,76 @@
           timeRemaining--;
         }, 1000);
 
-        // Start streaming payments
-        let paymentConfirmed = false;
+        // Monitor payments (polling instead of streaming for reliability)
         const startTime = Date.now();
         const timeout = 8 * 60 * 1000; // 8 minutes
+        let paymentConfirmed = false;
 
-        paymentStream = stellarServer
-          .payments()
-          .forAccount(merchantWallet)
-          .cursor('now')
-          .stream({
-            onmessage: async (payment) => {
-              if (paymentConfirmed || Date.now() - startTime >= timeout || !currentOrderId) {
-                if (paymentStream) {
-                  paymentStream();
-                  paymentStream = null;
-                }
+        const checkPayments = async () => {
+          try {
+            const payments = await stellarServer
+              .payments()
+              .forAccount(merchantWallet)
+              .limit(10)
+              .order('desc')
+              .call();
+
+            for (const payment of payments.records) {
+              if (payment.type !== 'payment' || payment.asset_type !== 'native') continue;
+              if (paymentConfirmed || Date.now() - startTime >= timeout || !currentOrderId) break;
+
+              const tx = await stellarServer.transactions().transaction(payment.transaction_hash).call();
+              const isValid = tx.memo === currentOrderId &&
+                payment.to === merchantWallet &&
+                parseFloat(payment.amount) >= parseFloat(totalXLM) * 0.95; // Allow 5% margin
+
+              if (isValid) {
+                paymentConfirmed = true;
                 clearInterval(timerInterval);
                 timerInterval = null;
-                if (!paymentConfirmed && currentOrderId) {
-                  document.getElementById('stellar-status').textContent = 'Payment not received within 8 minutes.';
-                  document.getElementById('error-message').textContent = 'Payment timed out. Please try again.';
-                  document.getElementById('stellar-timer').textContent = 'Time remaining: 0:00';
+                document.getElementById('stellar-status').textContent = 'Payment received!';
+                const transactionId = payment.transaction_hash;
+                try {
+                  const savedOrderId = await saveOrder('Stellar', transactionId, appliedCoupon, discount);
+                  alert('Payment successful! Order placed.');
+                  localStorage.removeItem('cart');
+                  localStorage.removeItem('appliedCoupon');
+                  closeStellarModal();
+                  window.location.href = `orderconfirmation.html?orderId=${savedOrderId}`;
+                } catch (error) {
+                  document.getElementById('error-message').textContent = 'Payment received but error saving order. Please contact support.';
+                  console.error('Error saving order:', error);
                 }
-                return;
+                break;
               }
-
-              console.log('Received payment:', {
-                type: payment.type,
-                asset_type: payment.asset_type,
-                amount: payment.amount,
-                to: payment.to,
-                created_at: payment.created_at,
-                transaction_hash: payment.transaction_hash
-              });
-
-              if (payment.type !== 'payment' || payment.asset_type !== 'native') return;
-
-              try {
-                const tx = await stellarServer.transactions().transaction(payment.transaction_hash).call();
-                console.log('Transaction details:', {
-                  memo: tx.memo,
-                  memo_type: tx.memo_type,
-                  successful: tx.successful,
-                  hash: tx.hash,
-                  created_at: payment.created_at
-                });
-
-                const isValid = tx.successful === true &&
-                  tx.memo_type === 'text' &&
-                  tx.memo === currentOrderId &&
-                  payment.to === merchantWallet &&
-                  Math.abs(parseFloat(payment.amount) - parseFloat(totalXLM)) <= 0.00001;
-
-                console.log('Payment validation:', {
-                  isValid,
-                  expected_memo: currentOrderId,
-                  actual_memo: tx.memo,
-                  expected_amount: totalXLM,
-                  actual_amount: payment.amount
-                });
-
-                if (isValid) {
-                  paymentConfirmed = true;
-                  if (paymentStream) {
-                    paymentStream();
-                    paymentStream = null;
-                  }
-                  clearInterval(timerInterval);
-                  timerInterval = null;
-                  document.getElementById('stellar-timer').textContent = 'Payment received!';
-                  const transactionId = payment.transaction_hash;
-                  console.log('Payment confirmed:', transactionId);
-                  try {
-                    const savedOrderId = await saveOrder('Stellar', transactionId, appliedCoupon, discount);
-                    alert('Payment successful! Order placed.');
-                    localStorage.removeItem('cart');
-                    localStorage.removeItem('appliedCoupon');
-                    closeStellarModal();
-                    window.location.href = `orderconfirmation.html?orderId=${savedOrderId}`;
-                  } catch (error) {
-                    console.error('Error saving order after payment:', error);
-                    document.getElementById('error-message').textContent = 'Payment received but error saving order. Please contact support.';
-                  }
-                }
-              } catch (error) {
-                console.error('Error fetching transaction details:', error);
-                document.getElementById('error-message').textContent = 'Error validating payment. Please try again.';
-              }
-            },
-            onerror: (error) => {
-              console.error('Stream error:', error);
-              document.getElementById('error-message').textContent = 'Error connecting to Stellar network. Please try again.';
             }
-          });
+
+            if (!paymentConfirmed && Date.now() - startTime < timeout && currentOrderId) {
+              setTimeout(checkPayments, 5000); // Poll every 5 seconds
+            } else if (!paymentConfirmed && currentOrderId) {
+              document.getElementById('stellar-status').textContent = 'Payment not received within 8 minutes.';
+              document.getElementById('error-message').textContent = 'Payment timed out. Please try again.';
+              document.getElementById('stellar-timer').textContent = 'Time remaining: 0:00';
+              closeStellarModal();
+            }
+          } catch (error) {
+            console.error('Error checking payment:', error);
+            if (Date.now() - startTime < timeout && currentOrderId) {
+              setTimeout(checkPayments, 5000); // Retry on error
+            } else {
+              document.getElementById('error-message').textContent = 'Error checking Stellar payment. Please try again.';
+              closeStellarModal();
+            }
+          }
+        };
+
+        // Start polling
+        checkPayments();
 
       } catch (error) {
-        if (paymentStream) {
-          paymentStream();
-          paymentStream = null;
-        }
-        clearInterval(timerInterval);
-        timerInterval = null;
-        currentOrderId = null;
         document.getElementById('error-message').textContent = 'Error initiating Stellar payment. Please try again.';
         console.error('Stellar error:', error);
+        closeStellarModal();
       } finally {
         document.getElementById('loading').style.display = 'none';
       }
@@ -839,7 +806,7 @@
     async function saveOrder(paymentMethod, paymentId = null, couponCode = null, discount = 0) {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
       const email = document.getElementById('user-email').textContent;
-      const orderId = `ORD${Date.now()}`;
+      const orderId = currentOrderId || `ORD${Date.now()}`; // Use currentOrderId for Stellar
       const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const totalAmount = subtotal - discount;
       const orderDate = new Date().toISOString();
@@ -913,7 +880,7 @@
       });
     }
 
-    // Initialize page by ensuring no automatic payment
+    // Initialize page
     window.addEventListener('load', () => {
       if (paymentStream) {
         paymentStream();
@@ -927,7 +894,7 @@
       closeStellarModal();
     });
   </script>
-<script src="https://cdn.botpress.cloud/webchat/v2.4/inject.js"></script>
-<script src="https://files.bpcontent.cloud/2025/04/27/16/20250427165022-EYO0KKO6.js"></script>
+  <script src="https://cdn.botpress.cloud/webchat/v2.4/inject.js"></script>
+  <script src="https://files.bpcontent.cloud/2025/04/27/16/20250427165022-EYO0KKO6.js"></script>
 </body>
 </html>
