@@ -139,8 +139,7 @@
   <!-- Header -->
   <header>
     <div class="top-banner">
-        <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
-        <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
+        <p>FREE delivery & 100% Discount</p>
     </div>
     <div class="top-header">
         <div class="left-section">
@@ -223,7 +222,7 @@
       <div class="cart-total" id="cart-subtotal">Subtotal: ₹0.00</div>
       <div class="discount-info" id="cart-discount" style="display: none;">Discount: ₹0.00</div>
       <div class="cart-total" id="cart-total">Total: ₹0.00</div>
-      <p class="coupon-notification">Use coupon hackhazards10 to get 10% off</p>
+      <p class="coupon-notification">Use coupon HACK4NATURE to get 10% off</p>
       <div class="coupon-section">
         <input type="text" id="coupon-code" placeholder="Enter coupon code">
         <button onclick="applyCoupon()">Apply Coupon</button>
@@ -396,7 +395,7 @@
 
       const appliedCoupon = localStorage.getItem('appliedCoupon');
       let discount = 0;
-      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hackhazards10') {
+      if (appliedCoupon && appliedCoupon.toLowerCase() === 'HACK4NATURE') {
         discount = subtotal * 0.10; // 10% discount
         cartDiscount.textContent = `Discount: -₹${discount.toFixed(2)}`;
         cartDiscount.style.display = 'block';
@@ -414,7 +413,7 @@
       const couponCode = couponInput.value.trim();
       const errorMessage = document.getElementById('error-message');
 
-      if (couponCode.toLowerCase() === 'hackhazards10') {
+      if (couponCode.toLowerCase() === 'HACK4NATURE') {
         localStorage.setItem('appliedCoupon', couponCode);
         errorMessage.textContent = 'Coupon applied successfully!';
         errorMessage.style.color = 'green';
@@ -458,7 +457,7 @@
       let subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       let discount = 0;
       const appliedCoupon = localStorage.getItem('appliedCoupon');
-      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hackhazards10') {
+      if (appliedCoupon && appliedCoupon.toLowerCase() === 'HACK4NATURE') {
         discount = subtotal * 0.10;
       }
       const total = (subtotal - discount) * 100; // Convert to paise
@@ -529,7 +528,7 @@
       let subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       let discount = 0;
       const appliedCoupon = localStorage.getItem('appliedCoupon');
-      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hackhazards10') {
+      if (appliedCoupon && appliedCoupon.toLowerCase() === 'HACK4NATURE') {
         discount = subtotal * 0.10;
       }
       const total = subtotal - discount;
@@ -603,7 +602,7 @@
       let subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       let discount = 0;
       const appliedCoupon = localStorage.getItem('appliedCoupon');
-      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hackhazards10') {
+      if (appliedCoupon && appliedCoupon.toLowerCase() === 'HACK4NATURE') {
         discount = subtotal * 0.10;
       }
       const totalINR = subtotal - discount;
