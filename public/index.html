@@ -80,7 +80,10 @@
             <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
         </div>
     </header>
-
+<div class="chatbot-notification" id="chatbotNotification">
+    🤖 AI Chatbot
+    <button onclick="closeNotification()">✖</button>
+  </div>
     <div class="promo-banner">
         <div class="promo-content">
             <p class="discount-label">Weekend Discount</p>
@@ -449,6 +452,14 @@
             new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
         }
     </script>
+    <script>
+    function closeNotification() {
+      const notif = document.getElementById('chatbotNotification');
+      notif.style.display = 'none';
+    }
+
+    
+  </script>
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
