@@ -407,24 +407,61 @@
       cartTotal.textContent = `Total: ₹${(subtotal - discount).toFixed(2)}`;
     }
 
-    // Apply coupon code
-    function applyCoupon() {
-      const couponInput = document.getElementById('coupon-code');
-      const couponCode = couponInput.value.trim();
-      const errorMessage = document.getElementById('error-message');
+  function applyCoupon() {
+  const couponInput = document.getElementById('coupon-code');
+  const couponCode = couponInput.value.trim();
+  const errorMessage = document.getElementById('error-message');
 
-      if (couponCode.toLowerCase() === 'HACK4NATURE') {
-        localStorage.setItem('appliedCoupon', couponCode);
-        errorMessage.textContent = 'Coupon applied successfully!';
-        errorMessage.style.color = 'green';
-        loadCart(); // Reload cart to reflect discount
-      } else {
-        localStorage.removeItem('appliedCoupon');
-        errorMessage.textContent = 'Invalid coupon code.';
-        errorMessage.style.color = 'red';
-        loadCart(); // Reload to remove any previous discount
-      }
-    }
+  if (couponCode.toLowerCase() === 'HACK4NATURE') {
+    localStorage.setItem('appliedCoupon', couponCode);
+    errorMessage.textContent = 'Coupon applied successfully!';
+    errorMessage.style.color = 'green';
+    loadCart(); // Reload cart to reflect discount
+  } else {
+    localStorage.removeItem('appliedCoupon');
+    errorMessage.textContent = 'Invalid coupon code.';
+    errorMessage.style.color = 'red';
+    loadCart(); // Reload to remove any previous discount
+  }
+}
+
+function loadCart() {
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+  const cartItems = document.getElementById('cart-items');
+  const cartSubtotal = document.getElementById('cart-subtotal');
+  const cartDiscount = document.getElementById('cart-discount');
+  const cartTotal = document.getElementById('cart-total');
+  let subtotal = 0;
+
+  if (cart.length === 0) {
+    cartItems.innerHTML = '<li>Your cart is empty.</li>';
+    cartSubtotal.textContent = 'Subtotal: ₹0.00';
+    cartDiscount.style.display = 'none';
+    cartTotal.textContent = 'Total: ₹0.00';
+    return;
+  }
+
+  cartItems.innerHTML = '';
+  cart.forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = `${item.name} - Quantity: ${item.quantity} - ₹${(item.price * item.quantity).toFixed(2)}`;
+    cartItems.appendChild(li);
+    subtotal += item.price * item.quantity;
+  });
+
+  const appliedCoupon = localStorage.getItem('appliedCoupon');
+  let discount = 0;
+  if (appliedCoupon && appliedCoupon.toLowerCase() === 'HACK4NATURE') {
+    discount = subtotal * 0.10; // 10% discount
+    cartDiscount.textContent = `Discount: -₹${discount.toFixed(2)}`;
+    cartDiscount.style.display = 'block';
+  } else {
+    cartDiscount.style.display = 'none';
+  }
+
+  cartSubtotal.textContent = `Subtotal: ₹${subtotal.toFixed(2)}`;
+  cartTotal.textContent = `Total: ₹${(subtotal - discount).toFixed(2)}`;
+}
 
     // Toggle alternate address
     document.getElementById('use-alternate-address').addEventListener('change', function() {
