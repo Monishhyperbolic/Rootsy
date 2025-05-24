@@ -5,9 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Checkout | Grocery Store</title>
   <link rel="stylesheet" href="shop.css">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <!-- Stellar SDK and QR Code library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/stellar-sdk/10.0.0/stellar-sdk.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
@@ -168,55 +170,57 @@
   </style>
 </head>
 <body>
+
   <!-- Header -->
   <header>
     <div class="top-banner">
-      <p>FREE delivery & 10% Discount Till Month End</p>
+        <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
+        <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
     </div>
     <div class="top-header">
-      <div class="left-section">
-        <a href="about.html">About Us</a>
-        <a href="profile.html">My account</a>
-        <a href="wishlist.html">Wishlist</a>
-        <span class="divider"></span>
-        <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
-      </div>
-      <div class="right-section">
-        <div id="google_translate_element"></div>
-        <a href="seller_login.html"><button class="seller-btn">Seller Login</button></a>
-        <a href="#">Order Tracking</a>
-      </div>
-    </div>
-    <nav class="navbar">
-      <div class="navbar-left">
-        <a href="#" class="logo">
-          <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="Grobox Logo">
-          <span id="brand"></span>
-        </a>
-        <div class="delivery">
-          <span>Deliver to</span>
-          <span>all</span>
+        <div class="left-section">
+          <a href="about.html">About Us</a>
+          <a href="profile.html">My account</a>
+          <a href="wishlist.html">Wishlist</a>
+          <span class="divider"></span>
+          <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
+        </div>
+        <div class="right-section">
+          <div id="google_translate_element"></div>
+          <a href="seller_login.html"><button class="seller-btn">Seller Login</button></a>
+          <a href="#">Order Tracking</a>
         </div>
       </div>
-      <div class="navbar-center">
-        <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
-        <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-      </div>
-      <div class="navbar-right">
-        <a href="orderhistory.html" class="account"><i class="fa-solid fa-user"></i><span><b> ORDER HISTORY</b></span></a>
-        <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
-        <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
-      </div>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a href="#" class="logo">
+                <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="Grobox Logo">
+                <span id="brand"></span>
+            </a>
+            <div class="delivery">
+                <span>Deliver to</span>
+                <span>all</span>
+            </div>
+        </div>
+        <div class="navbar-center">
+            <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
+            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+        <div class="navbar-right">
+            <a href="orderhistory.html" class="account"><i class="fa-solid fa-user"></i><span><b> ORDER HISTORY</b></span></a>
+            <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
+            <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
+        </div>
     </nav>
     <div class="navbar-links">
-      <a href="index.html">Home</a>
-      <a href="shop.html">Shop</a>
-      <a href="fruitsvegetable.html">Fruits & Vegetables</a>
-      <a href="beverages.html">Beverages</a>
-      <a href="blog.html">Blog</a>
-      <a href="contact.html">Contact</a>
-      <a href="trendingproduct.html">Trending Products</a>
-      <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="fruitsvegetable.html">Fruits & Vegetables</a>
+        <a href="beverages.html">Beverages</a>
+        <a href="blog.html">Blog</a>
+        <a href="contact.html">Contact</a>
+        <a href="trendingproduct.html">Trending Products</a>
+        <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
     </div>
   </header>
 
@@ -254,7 +258,7 @@
       <div class="cart-total" id="cart-subtotal">Subtotal: ₹0.00</div>
       <div class="discount-info" id="cart-discount" style="display: none;">Discount: ₹0.00</div>
       <div class="cart-total" id="cart-total">Total: ₹0.00</div>
-      <p class="coupon-notification">Use coupon HACK4NATURE to get 10% off</p>
+      <p class="coupon-notification">Use coupon hackhazards10 to get 10% off</p>
       <div class="coupon-section">
         <input type="text" id="coupon-code" placeholder="Enter coupon code">
         <button onclick="applyCoupon()">Apply Coupon</button>
@@ -269,20 +273,19 @@
         <button class="coinbase-btn" onclick="initiateCoinbasePayment()">Pay with Coinbase</button>
         <button class="stellar-btn" onclick="openStellarModal()">Pay with Stellar</button>
       </div>
-    </div>
-
-    <!-- Stellar Payment Modal -->
-    <div id="stellar-modal" class="modal">
-      <div class="modal-content">
-        <span class="close-btn" onclick="closeStellarModal()">×</span>
-        <h3>Stellar Payment</h3>
-        <p>Send the exact amount to the Stellar wallet below:</p>
-        <p><strong>Amount:</strong> <span id="stellar-amount"></span> XLM</p>
-        <p><strong>Wallet Address:</strong> <span id="stellar-wallet"></span></p>
-        <p><strong>Memo:</strong> <span id="stellar-memo"></span></p>
-        <div id="stellar-qr-code"></div>
-        <p id="stellar-status">Waiting for payment...</p>
-        <p id="stellar-timer">Time remaining: 8:00</p>
+      <!-- Stellar Payment Modal -->
+      <div id="stellar-modal" class="modal">
+        <div class="modal-content">
+          <span class="close-btn" onclick="closeStellarModal()">×</span>
+          <h3>Stellar Payment</h3>
+          <p>Send the exact amount to the Stellar wallet below:</p>
+          <p><strong>Amount:</strong> <span id="stellar-amount"></span> XLM</p>
+          <p><strong>Wallet Address:</strong> <span id="stellar-wallet"></span></p>
+          <p><strong>Memo:</strong> <span id="stellar-memo"></span></p>
+          <div id="stellar-qr-code"></div>
+          <p id="stellar-status">Waiting for payment...</p>
+          <p id="stellar-timer">Time remaining: 8:00</p>
+        </div>
       </div>
     </div>
 
@@ -293,49 +296,49 @@
   <!-- Footer -->
   <footer>
     <div class="newsletter">
-      <p>Join our newsletter for exclusive discounts!</p>
-      <form>
-        <input type="email" placeholder="Enter your email">
-        <button type="submit">Subscribe</button>
-      </form>
+        <p>Join our newsletter for exclusive discounts!</p>
+        <form>
+            <input type="email" placeholder="Enter your email">
+            <button type="submit">Subscribe</button>
+        </form>
     </div>
     <div class="footer-content">
-      <div class="column">
-        <h3>Need Help?</h3>
-        <p>Contact our support team: support@rootsy.com</p>
-        <p>Call us: 0800 19019028</p>
-      </div>
-      <div class="column">
-        <h3>Company Info</h3>
-        <ul>
-          <li><a href="#">About Us</a></li>
-          <li><a href="#">Careers</a></li>
-        </ul>
-      </div>
-      <div class="column">
-        <h3>Follow Us</h3>
-        <div class="social-media">
-          <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
-          <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
-          <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
+        <div class="column">
+            <h3>Need Help?</h3>
+            <p>Contact our support team: support@rootsy.com</p>
+            <p>Call us: 0800 19019028</p>
         </div>
-      </div>
-      <div class="column">
-        <h3>Payment Methods</h3>
-        <div class="payment-methods">
-          <i class="fa-brands fa-cc-visa"></i>
-          <i class="fa-brands fa-cc-mastercard"></i>
-          <i class="fa-brands fa-cc-paypal"></i>
+        <div class="column">
+            <h3>Company Info</h3>
+            <ul>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Careers</a></li>
+            </ul>
         </div>
-      </div>
+        <div class="column">
+            <h3>Follow Us</h3>
+            <div class="social-media">
+                <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
+                <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
+                <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
+            </div>
+        </div>
+        <div class="column">
+            <h3>Payment Methods</h3>
+            <div class="payment-methods">
+                <i class="fa-brands fa-cc-visa"></i>
+                <i class="fa-brands fa-cc-mastercard"></i>
+                <i class="fa-brands fa-cc-paypal"></i>
+            </div>
+        </div>
     </div>
     <div class="copyright">
-      Copyright 2025 ©️ Rootsy All rights reserved. Powered by Team Raze.
+        Copyright 2025 ©️ Rootsy All rights reserved. Powered by Bewbandits.
     </div>
     <div class="links">
-      <a href="#">Terms and Conditions</a> |
-      <a href="#">Privacy Policy</a> |
-      <a href="#">Order Tracking</a>
+        <a href="#">Terms and Conditions</a> |
+        <a href="#">Privacy Policy</a> |
+        <a href="#">Order Tracking</a>
     </div>
   </footer>
 
@@ -361,7 +364,7 @@
     const ordersBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4116';
     const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
 
-    // Stellar Configuration (Testnet)
+    // Stellar Configuration (Testnet for testing, replace with mainnet for production)
     const stellarServer = new StellarSdk.Server('https://horizon-testnet.stellar.org');
     const merchantWallet = 'GBSPECXL4NDWYGXLFRSPOB767IRT63NQ4OBSF74O2RFX44LG7QH74XZD';
     StellarSdk.Networks.TESTNET; // Ensure testnet passphrase
@@ -382,17 +385,20 @@
       }
     });
 
-    // Fetch user data from JSONBin
+    // Fetch user data from users bin
     async function fetchUserData(email) {
       try {
         document.getElementById('loading').style.display = 'block';
         const response = await fetch(usersBinUrl, {
           method: 'GET',
-          headers: { 'X-Master-Key': apiKey }
+          headers: {
+            'X-Master-Key': apiKey
+          }
         });
         const data = await response.json();
         const users = data.record?.users || [];
-        const user = users.find(u => u.email === email);
+
+        const user = users.find(user => user.email === email);
 
         if (user) {
           document.getElementById('user-name').value = user.name || '';
@@ -411,7 +417,7 @@
       }
     }
 
-    // Load cart from localStorage
+    // Load cart from localStorage and apply coupon if previously set
     function loadCart() {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
       const cartItems = document.getElementById('cart-items');
@@ -438,8 +444,8 @@
 
       const appliedCoupon = localStorage.getItem('appliedCoupon');
       let discount = 0;
-      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hack4nature') {
-        discount = subtotal * 0.10;
+      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hackhazards10') {
+        discount = subtotal * 0.10; // 10% discount
         cartDiscount.textContent = `Discount: -₹${discount.toFixed(2)}`;
         cartDiscount.style.display = 'block';
       } else {
@@ -456,16 +462,16 @@
       const couponCode = couponInput.value.trim();
       const errorMessage = document.getElementById('error-message');
 
-      if (couponCode.toLowerCase() === 'hack4nature') {
+      if (couponCode.toLowerCase() === 'hackhazards10') {
         localStorage.setItem('appliedCoupon', couponCode);
         errorMessage.textContent = 'Coupon applied successfully!';
         errorMessage.style.color = 'green';
-        loadCart();
+        loadCart(); // Reload cart to reflect discount
       } else {
         localStorage.removeItem('appliedCoupon');
         errorMessage.textContent = 'Invalid coupon code.';
         errorMessage.style.color = 'red';
-        loadCart();
+        loadCart(); // Reload to remove any previous discount
       }
     }
 
@@ -506,7 +512,7 @@
       let subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       let discount = 0;
       const appliedCoupon = localStorage.getItem('appliedCoupon');
-      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hack4nature') {
+      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hackhazards10') {
         discount = subtotal * 0.10;
       }
       const total = (subtotal - discount) * 100; // Convert to paise
@@ -514,6 +520,7 @@
 
       try {
         document.getElementById('loading').style.display = 'block';
+
         const options = {
           key: 'rzp_test_2Z0bGlFe6nKd9T',
           amount: total,
@@ -522,11 +529,11 @@
           description: `Order #${orderId}`,
           handler: async function (response) {
             try {
-              const savedOrderId = await saveOrder('Razorpay', response.razorpay_payment_id, appliedCoupon, discount);
+              const orderId = await saveOrder('Razorpay', response.razorpay_payment_id, appliedCoupon, discount);
               alert('Payment successful! Order placed.');
               localStorage.removeItem('cart');
               localStorage.removeItem('appliedCoupon');
-              window.location.href = `orderconfirmation.html?orderId=${savedOrderId}`;
+              window.location.href = `orderconfirmation.html?orderId=${orderId}`;
             } catch (error) {
               document.getElementById('error-message').textContent = 'Error saving order after payment. Please contact support.';
               console.error('Order save error:', error);
@@ -536,7 +543,9 @@
             name: document.getElementById('user-name').value,
             email: document.getElementById('user-email').textContent
           },
-          theme: { color: '#5a9cf7' }
+          theme: {
+            color: '#5a9cf7'
+          }
         };
 
         const rzp = new Razorpay(options);
@@ -566,7 +575,7 @@
       let subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       let discount = 0;
       const appliedCoupon = localStorage.getItem('appliedCoupon');
-      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hack4nature') {
+      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hackhazards10') {
         discount = subtotal * 0.10;
       }
       const total = subtotal - discount;
@@ -588,9 +597,17 @@
         const response = await axios.post('https://api.commerce.coinbase.com/charges', {
           name: 'Rootsy Grocery Store Order',
           description: `Order #${orderId}`,
-          local_price: { amount: total.toFixed(2), currency: 'INR' },
+          local_price: {
+            amount: total.toFixed(2),
+            currency: 'INR'
+          },
           pricing_type: 'fixed_price',
-          metadata: { email, orderId, coupon: appliedCoupon || null, discount: discount.toFixed(2) },
+          metadata: {
+            email,
+            orderId,
+            coupon: appliedCoupon || null,
+            discount: discount.toFixed(2)
+          },
           redirect_url: `https://yourdomain.com/coinbasecallback.html?orderId=${orderId}`,
           cancel_url: 'https://yourdomain.com/paymentfailure.html'
         }, {
@@ -600,11 +617,12 @@
           }
         });
 
-        window.location.href = response.data.data.hosted_url;
+        const checkoutUrl = response.data.data.hosted_url;
+        window.location.href = checkoutUrl;
       } catch (error) {
         document.getElementById('error-message').textContent = 'Error initiating Coinbase payment. Please try again.';
         console.error('Coinbase error:', error.response?.data || error.message);
-      } finally {
+      } finally2
         document.getElementById('loading').style.display = 'none';
       }
     }
@@ -672,7 +690,7 @@
       let subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       let discount = 0;
       const appliedCoupon = localStorage.getItem('appliedCoupon');
-      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hack4nature') {
+      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hackhazards10') {
         discount = subtotal * 0.10;
       }
       const totalINR = subtotal - discount;
@@ -835,7 +853,7 @@
       }
     }
 
-    // Save order to JSONBin
+    // Save order to orders bin
     async function saveOrder(paymentMethod, paymentId = null, couponCode = null, discount = 0) {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
       const email = document.getElementById('user-email').textContent;
@@ -882,10 +900,13 @@
       try {
         const response = await fetch(ordersBinUrl, {
           method: 'GET',
-          headers: { 'X-Master-Key': apiKey }
+          headers: {
+            'X-Master-Key': apiKey
+          }
         });
         const data = await response.json();
         const orders = data.record?.orders || [];
+
         orders.push(order);
 
         await fetch(ordersBinUrl, {
@@ -900,6 +921,7 @@
         return orderId;
       } catch (error) {
         console.error('Error saving order:', error);
+        document.getElementById('error-message').textContent = 'Error saving order. Please try again.';
         throw error;
       }
     }
@@ -927,7 +949,5 @@
       closeStellarModal();
     });
   </script>
-<script src="https://cdn.botpress.cloud/webchat/v2.4/inject.js"></script>
-<script src="https://files.bpcontent.cloud/2025/04/27/16/20250427165022-EYO0KKO6.js"></script>
 </body>
 </html>
