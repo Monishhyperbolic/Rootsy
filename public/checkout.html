@@ -115,6 +115,11 @@
       text-align: center;
       margin: 20px 0;
     }
+    .success-message {
+      color: green;
+      text-align: center;
+      margin: 20px 0;
+    }
     .loading {
       text-align: center;
       margin: 20px 0;
@@ -227,6 +232,7 @@
         <input type="text" id="coupon-code" placeholder="Enter coupon code">
         <button onclick="applyCoupon()">Apply Coupon</button>
       </div>
+      <div id="coupon-message" style="margin-top: 10px; font-size: 14px;"></div>
     </div>
 
     <!-- Payment Options -->
@@ -395,73 +401,44 @@
 
       const appliedCoupon = localStorage.getItem('appliedCoupon');
       let discount = 0;
-      if (appliedCoupon && appliedCoupon.toLowerCase() === 'HACK4NATURE') {
+      if (appliedCoupon && appliedCoupon.toUpperCase() === 'HACK4NATURE') {
         discount = subtotal * 0.10; // 10% discount
         cartDiscount.textContent = `Discount: -₹${discount.toFixed(2)}`;
         cartDiscount.style.display = 'block';
+        
+        // Update coupon input field to show applied coupon
+        document.getElementById('coupon-code').value = appliedCoupon;
+        document.getElementById('coupon-message').innerHTML = '<span style="color: green;">✓ Coupon applied successfully!</span>';
       } else {
         cartDiscount.style.display = 'none';
+        document.getElementById('coupon-message').textContent = '';
       }
 
       cartSubtotal.textContent = `Subtotal: ₹${subtotal.toFixed(2)}`;
       cartTotal.textContent = `Total: ₹${(subtotal - discount).toFixed(2)}`;
     }
 
-  function applyCoupon() {
-  const couponInput = document.getElementById('coupon-code');
-  const couponCode = couponInput.value.trim();
-  const errorMessage = document.getElementById('error-message');
+    // Apply coupon function
+    function applyCoupon() {
+      const couponInput = document.getElementById('coupon-code');
+      const couponCode = couponInput.value.trim();
+      const couponMessage = document.getElementById('coupon-message');
 
-  if (couponCode.toLowerCase() === 'HACK4NATURE') {
-    localStorage.setItem('appliedCoupon', couponCode);
-    errorMessage.textContent = 'Coupon applied successfully!';
-    errorMessage.style.color = 'green';
-    loadCart(); // Reload cart to reflect discount
-  } else {
-    localStorage.removeItem('appliedCoupon');
-    errorMessage.textContent = 'Invalid coupon code.';
-    errorMessage.style.color = 'red';
-    loadCart(); // Reload to remove any previous discount
-  }
-}
+      if (!couponCode) {
+        couponMessage.innerHTML = '<span style="color: red;">Please enter a coupon code.</span>';
+        return;
+      }
 
-function loadCart() {
-  const cart = JSON.parse(localStorage.getItem('cart')) || [];
-  const cartItems = document.getElementById('cart-items');
-  const cartSubtotal = document.getElementById('cart-subtotal');
-  const cartDiscount = document.getElementById('cart-discount');
-  const cartTotal = document.getElementById('cart-total');
-  let subtotal = 0;
-
-  if (cart.length === 0) {
-    cartItems.innerHTML = '<li>Your cart is empty.</li>';
-    cartSubtotal.textContent = 'Subtotal: ₹0.00';
-    cartDiscount.style.display = 'none';
-    cartTotal.textContent = 'Total: ₹0.00';
-    return;
-  }
-
-  cartItems.innerHTML = '';
-  cart.forEach(item => {
-    const li = document.createElement('li');
-    li.textContent = `${item.name} - Quantity: ${item.quantity} - ₹${(item.price * item.quantity).toFixed(2)}`;
-    cartItems.appendChild(li);
-    subtotal += item.price * item.quantity;
-  });
-
-  const appliedCoupon = localStorage.getItem('appliedCoupon');
-  let discount = 0;
-  if (appliedCoupon && appliedCoupon.toLowerCase() === 'HACK4NATURE') {
-    discount = subtotal * 0.10; // 10% discount
-    cartDiscount.textContent = `Discount: -₹${discount.toFixed(2)}`;
-    cartDiscount.style.display = 'block';
-  } else {
-    cartDiscount.style.display = 'none';
-  }
-
-  cartSubtotal.textContent = `Subtotal: ₹${subtotal.toFixed(2)}`;
-  cartTotal.textContent = `Total: ₹${(subtotal - discount).toFixed(2)}`;
-}
+      if (couponCode.toUpperCase() === 'HACK4NATURE') {
+        localStorage.setItem('appliedCoupon', couponCode.toUpperCase());
+        couponMessage.innerHTML = '<span style="color: green;">✓ Coupon applied successfully! 10% discount added.</span>';
+        loadCart(); // Reload cart to reflect discount
+      } else {
+        localStorage.removeItem('appliedCoupon');
+        couponMessage.innerHTML = '<span style="color: red;">✗ Invalid coupon code. Please try again.</span>';
+        loadCart(); // Reload to remove any previous discount
+      }
+    }
 
     // Toggle alternate address
     document.getElementById('use-alternate-address').addEventListener('change', function() {
@@ -494,7 +471,7 @@ function loadCart() {
       let subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       let discount = 0;
       const appliedCoupon = localStorage.getItem('appliedCoupon');
-      if (appliedCoupon && appliedCoupon.toLowerCase() === 'HACK4NATURE') {
+      if (appliedCoupon && appliedCoupon.toUpperCase() === 'HACK4NATURE') {
         discount = subtotal * 0.10;
       }
       const total = (subtotal - discount) * 100; // Convert to paise
@@ -502,6 +479,7 @@ function loadCart() {
 
       try {
         document.getElementById('loading').style.display = 'block';
+        document.getElementById('error-message').textContent = '';
 
         const options = {
           key: 'rzp_test_2Z0bGlFe6nKd9T',
@@ -565,7 +543,7 @@ function loadCart() {
       let subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       let discount = 0;
       const appliedCoupon = localStorage.getItem('appliedCoupon');
-      if (appliedCoupon && appliedCoupon.toLowerCase() === 'HACK4NATURE') {
+      if (appliedCoupon && appliedCoupon.toUpperCase() === 'HACK4NATURE') {
         discount = subtotal * 0.10;
       }
       const total = subtotal - discount;
@@ -585,6 +563,8 @@ function loadCart() {
 
       try {
         document.getElementById('loading').style.display = 'block';
+        document.getElementById('error-message').textContent = '';
+        
         const response = await axios.post('https://api.commerce.coinbase.com/charges', {
           name: 'Rootsy Grocery Store Order',
           description: `Order #${orderId}`,
@@ -639,7 +619,7 @@ function loadCart() {
       let subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       let discount = 0;
       const appliedCoupon = localStorage.getItem('appliedCoupon');
-      if (appliedCoupon && appliedCoupon.toLowerCase() === 'HACK4NATURE') {
+      if (appliedCoupon && appliedCoupon.toUpperCase() === 'HACK4NATURE') {
         discount = subtotal * 0.10;
       }
       const totalINR = subtotal - discount;
@@ -698,112 +678,3 @@ function loadCart() {
               const orderId = await saveOrder('Stellar', transactionId, appliedCoupon, discount);
               alert('Payment successful! Order placed.');
               localStorage.removeItem('cart');
-              localStorage.removeItem('appliedCoupon');
-              window.location.href = `orderconfirmation.html?orderId=${orderId}`;
-              return;
-            }
-
-            // Wait 5 seconds before next check
-            await new Promise(resolve => setTimeout(resolve, 5000));
-          } catch (error) {
-            console.error('Error checking payment:', error);
-            // Continue polling on error
-            await new Promise(resolve => setTimeout(resolve, 5000));
-          }
-        }
-
-        // Timeout reached
-        document.getElementById('stellar-status').textContent = 'Payment not received within 10 minutes.';
-        document.getElementById('error-message').textContent = 'Payment timed out. Please try again.';
-      } catch (error) {
-        document.getElementById('error-message').textContent = 'Error initiating Stellar payment. Please try again.';
-        console.error('Stellar error:', error);
-      } finally {
-        document.getElementById('loading').style.display = 'none';
-      }
-    }
-
-    // Save order to orders bin
-    async function saveOrder(paymentMethod, paymentId = null, couponCode = null, discount = 0) {
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const email = document.getElementById('user-email').textContent;
-      const orderId = `ORD${Date.now()}`;
-      const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      const totalAmount = subtotal - discount;
-      const orderDate = new Date().toISOString();
-      const deliveryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-
-      const order = {
-        orderId,
-        user: {
-          name: document.getElementById('user-name').value,
-          email,
-          phone: document.getElementById('user-phone').value || '',
-          shippingAddress: {
-            addressLine1: document.getElementById('user-street').value,
-            city: document.getElementById('user-city').value,
-            state: document.getElementById('user-state').value || '',
-            postalCode: document.getElementById('user-postal-code').value,
-            country: document.getElementById('user-country').value
-          }
-        },
-        products: cart.map(item => ({
-          productId: item.id || `P${Date.now()}`,
-          name: item.name,
-          quantity: item.quantity,
-          price: item.price,
-          totalPrice: item.price * item.quantity,
-          seller: { name: item.seller || 'Rootsy Store' }
-        })),
-        orderDate,
-        deliveryDate,
-        subtotal,
-        discount,
-        totalAmount,
-        orderStatus: 'Pending',
-        paymentMethod,
-        paymentStatus: paymentMethod === 'Razorpay' || paymentMethod === 'Stellar' ? 'Paid' : 'Pending',
-        paymentId,
-        couponCode: couponCode || null
-      };
-
-      try {
-        const response = await fetch(ordersBinUrl, {
-          method: 'GET',
-          headers: {
-            'X-Master-Key': apiKey
-          }
-        });
-        const data = await response.json();
-        const orders = data.record?.orders || [];
-
-        orders.push(order);
-
-        await fetch(ordersBinUrl, {
-          method: 'PUT',
-          headers: {
-            'X-Master-Key': apiKey,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ orders })
-        });
-
-        return orderId;
-      } catch (error) {
-        console.error('Error saving order:', error);
-        document.getElementById('error-message').textContent = 'Error saving order. Please try again.';
-        throw error;
-      }
-    }
-
-    // Logout User
-    function logout() {
-      firebase.auth().signOut().then(() => {
-        window.location.href = "sign_in.html";
-      }).catch((error) => {
-        console.error('Error signing out:', error);
-      });
-    }
-  </script>
-</body>
-</html>
