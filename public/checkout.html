@@ -622,7 +622,7 @@
       } catch (error) {
         document.getElementById('error-message').textContent = 'Error initiating Coinbase payment. Please try again.';
         console.error('Coinbase error:', error.response?.data || error.message);
-      } finally2
+      } finally {
         document.getElementById('loading').style.display = 'none';
       }
     }
